@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from base64 import b64encode
+import asyncio
 import ipaddress
 import binascii
 import requests
@@ -27,6 +28,20 @@ from .controller_const import (
 )
 
 from homeassistant.const import ATTR_ENTITY_ID
+
+# Configuration key identifying the physical device for each controller type,
+# used to serialize commands sent to the same device from different entities.
+DEVICE_KEY_CONF = {
+    BROADLINK_CONTROLLER: "REMOTE_ENTITY",
+    XIAOMI_CONTROLLER: "REMOTE_ENTITY",
+    MQTT_CONTROLLER: "MQTT_TOPIC",
+    UFOR11_CONTROLLER: "MQTT_TOPIC",
+    LOOKIN_CONTROLLER: "REMOTE_HOST",
+    ESPHOME_CONTROLLER: "ESPHOME_SERVICE",
+    ZHA_CONTROLLER: "ZHA_IEEE",
+}
+
+_DEVICE_LOCKS = {}
 
 
 def get_controller(hass, controller, encoding, controller_data):
@@ -61,6 +76,7 @@ def get_controller_schema(vol, cv):
                 vol.Required(CONTROLLER_CONF["CONTROLLER_TYPE"]): vol.Equal(
                     BROADLINK_CONTROLLER
                 ),
+                vol.Optional(CONTROLLER_CONF["COMMAND_DELAY"]): cv.positive_float,
                 vol.Required(CONTROLLER_CONF["REMOTE_ENTITY"]): cv.entity_id,
                 vol.Optional(CONTROLLER_CONF["NUM_REPEATS"]): cv.positive_int,
                 vol.Optional(CONTROLLER_CONF["DELAY_SECS"]): cv.positive_float,
@@ -71,6 +87,7 @@ def get_controller_schema(vol, cv):
                 vol.Required(CONTROLLER_CONF["CONTROLLER_TYPE"]): vol.Equal(
                     XIAOMI_CONTROLLER
                 ),
+                vol.Optional(CONTROLLER_CONF["COMMAND_DELAY"]): cv.positive_float,
                 vol.Required(CONTROLLER_CONF["REMOTE_ENTITY"]): cv.entity_id,
             }
         ),
@@ -79,6 +96,7 @@ def get_controller_schema(vol, cv):
                 vol.Required(CONTROLLER_CONF["CONTROLLER_TYPE"]): vol.Equal(
                     MQTT_CONTROLLER
                 ),
+                vol.Optional(CONTROLLER_CONF["COMMAND_DELAY"]): cv.positive_float,
                 vol.Required(CONTROLLER_CONF["MQTT_TOPIC"]): cv.string,
             }
         ),
@@ -87,6 +105,7 @@ def get_controller_schema(vol, cv):
                 vol.Required(CONTROLLER_CONF["CONTROLLER_TYPE"]): vol.Equal(
                     UFOR11_CONTROLLER
                 ),
+                vol.Optional(CONTROLLER_CONF["COMMAND_DELAY"]): cv.positive_float,
                 vol.Required(CONTROLLER_CONF["MQTT_TOPIC"]): cv.string,
             }
         ),
@@ -95,6 +114,7 @@ def get_controller_schema(vol, cv):
                 vol.Required(CONTROLLER_CONF["CONTROLLER_TYPE"]): vol.Equal(
                     LOOKIN_CONTROLLER
                 ),
+                vol.Optional(CONTROLLER_CONF["COMMAND_DELAY"]): cv.positive_float,
                 vol.Required(CONTROLLER_CONF["REMOTE_HOST"]): vol.All(
                     ipaddress.ip_address, cv.string
                 ),
@@ -105,6 +125,7 @@ def get_controller_schema(vol, cv):
                 vol.Required(CONTROLLER_CONF["CONTROLLER_TYPE"]): vol.Equal(
                     ESPHOME_CONTROLLER
                 ),
+                vol.Optional(CONTROLLER_CONF["COMMAND_DELAY"]): cv.positive_float,
                 vol.Required(CONTROLLER_CONF["ESPHOME_SERVICE"]): cv.string,
             }
         ),
@@ -113,6 +134,7 @@ def get_controller_schema(vol, cv):
                 vol.Required(CONTROLLER_CONF["CONTROLLER_TYPE"]): vol.Equal(
                     ZHA_CONTROLLER
                 ),
+                vol.Optional(CONTROLLER_CONF["COMMAND_DELAY"]): cv.positive_float,
                 vol.Required(CONTROLLER_CONF["ZHA_IEEE"]): cv.string,
                 vol.Required(CONTROLLER_CONF["ZHA_ENDPOINT_ID"]): cv.positive_int,
                 vol.Required(CONTROLLER_CONF["ZHA_CLUSTER_ID"]): cv.positive_int,
@@ -134,15 +156,28 @@ class AbstractController(ABC):
         self._controller = controller
         self._encoding = encoding
         self._controller_data = controller_data
+        self._command_delay = controller_data.get(CONTROLLER_CONF["COMMAND_DELAY"], 0)
+        device_key = (
+            controller,
+            controller_data[CONTROLLER_CONF[DEVICE_KEY_CONF[controller]]],
+        )
+        self._device_lock = _DEVICE_LOCKS.setdefault(device_key, asyncio.Lock())
 
     @abstractmethod
     def check_encoding(self, encoding):
         """Check if the encoding is supported by the controller."""
         pass
 
-    @abstractmethod
     async def send(self, command):
-        """Send a command."""
+        """Send a command, serialized per physical device."""
+        async with self._device_lock:
+            await self._send(command)
+            if self._command_delay:
+                await asyncio.sleep(self._command_delay)
+
+    @abstractmethod
+    async def _send(self, command):
+        """Send a command to the device."""
         pass
 
 
@@ -156,7 +191,7 @@ class BroadlinkController(AbstractController):
                 "The encoding is not supported " "by the Broadlink controller."
             )
 
-    async def send(self, command):
+    async def _send(self, command):
         """Send a command."""
         commands = []
 
@@ -211,7 +246,7 @@ class XiaomiController(AbstractController):
                 "The encoding is not supported " "by the Xiaomi controller."
             )
 
-    async def send(self, command):
+    async def _send(self, command):
         """Send a command."""
         service_data = {
             ATTR_ENTITY_ID: self._controller_data[CONTROLLER_CONF["REMOTE_ENTITY"]],
@@ -229,7 +264,7 @@ class MQTTController(AbstractController):
         if encoding not in MQTT_COMMANDS_ENCODING:
             raise Exception("The encoding is not supported " "by the mqtt controller.")
 
-    async def send(self, command):
+    async def _send(self, command):
         """Send a command."""
         service_data = {
             "topic": self._controller_data[CONTROLLER_CONF["MQTT_TOPIC"]],
@@ -249,7 +284,7 @@ class LookinController(AbstractController):
                 "The encoding is not supported " "by the LOOKin controller."
             )
 
-    async def send(self, command):
+    async def _send(self, command):
         """Send a command."""
         encoding = self._encoding.lower().replace("pronto", "prontohex")
         url = (
@@ -273,7 +308,7 @@ class ESPHomeController(AbstractController):
                 "The encoding is not supported " "by the ESPHome controller."
             )
 
-    async def send(self, command):
+    async def _send(self, command):
         """Send a command."""
         service_data = {"command": json.loads(command)}
 
@@ -294,7 +329,7 @@ class ZHAController(AbstractController):
                 "The encoding is not supported " "by the ESPHome controller."
             )
 
-    async def send(self, command):
+    async def _send(self, command):
         """Send a command."""
         service_data = {
             "ieee": self._controller_data[CONTROLLER_CONF["ZHA_IEEE"]],
@@ -318,7 +353,7 @@ class UFOR11Controller(MQTTController):
         if encoding not in UFOR11_COMMANDS_ENCODING:
             raise Exception("The encoding is not supported by the UFO-R11 controller.")
 
-    async def send(self, command):
+    async def _send(self, command):
         """Send a command."""
         service_data = {
             "topic": self._controller_data[CONTROLLER_CONF["MQTT_TOPIC"]],

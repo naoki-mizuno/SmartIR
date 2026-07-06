@@ -17,6 +17,10 @@ Find your device's brand code [here](MEDIA_PLAYER_CODES.md) and add the number i
 | `device_class`               | string  | optional | The type of media this device represents. Setting this will display proper icon in HA interface. Please check available device classes as [defined](https://developers.home-assistant.io/docs/core/entity/media-player/#available-device-classes) in HomeAssistant.                                                                                                                                                                       |
 | `source_names`               |  dict   | optional | Override the names of sources as displayed in HomeAssistant (see examples below).                                                                                                                                                                                                                                                                                                                                                         |
 
+### Shared controller options
+
+Every `controller_data` type accepts an optional `command_delay` (number of seconds, e.g. `0.75`). Commands addressed to the same physical controller (for example one IR blaster shared by several SmartIR entities) are always sent one at a time; `command_delay` sets the pause after each command before the next one is sent. Use it for controllers such as the UFO-R11 which drop commands received while still transmitting the previous one.
+
 ## Example configurations
 
 ### Example (using broadlink controller)

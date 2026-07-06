@@ -15,6 +15,10 @@ Find your device's brand code [here](LIGHT_CODES.md) and add the number in the `
 | `power_sensor_delay`         |   int   | optional | Maximum delay in second in which power sensor is able to report back to HA changed state of the device, default is 10 seconds. If sensor reaction time is longer extend this time, otherwise you might get unwanted changes in the device state.                                                                                                                                                                                          |
 | `power_sensor_restore_state` | boolean | optional | If `true` than in case power sensor will report to HA that device is `on` without HA actually switching it `on `(device was switched on by remote, of device cycled, etc.), than HA will report last assumed state and attributes at the time when the device was `on` managed by HA. If set to `false` when device will be reported as `on` by the power sensors all device attributes will be reported as `UNKNOWN`. Default is `true`. |
 
+### Shared controller options
+
+Every `controller_data` type accepts an optional `command_delay` (number of seconds, e.g. `0.75`). Commands addressed to the same physical controller (for example one IR blaster shared by several SmartIR entities) are always sent one at a time; `command_delay` sets the pause after each command before the next one is sent. Use it for controllers such as the UFO-R11 which drop commands received while still transmitting the previous one.
+
 ## Example (using broadlink controller)
 
 Add a Broadlink RM device named "Bedroom" via config flow (read the [docs](https://www.homeassistant.io/integrations/broadlink/)).

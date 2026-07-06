@@ -31,6 +31,7 @@ CONTROLLER_SUPPORT = {
 
 CONTROLLER_CONF = {
     "CONTROLLER_TYPE": "controller_type",
+    "COMMAND_DELAY": "command_delay",
     "REMOTE_ENTITY": "remote_entity",
     "NUM_REPEATS": "num_repeats",
     "DELAY_SECS": "delay_secs",
