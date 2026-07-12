@@ -39,7 +39,8 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
         ): cv.positive_int,
         vol.Optional(CONF_POWER_SENSOR_RESTORE_STATE, default=True): cv.boolean,
         vol.Optional(CONF_ALWAYS_SEND_COMMAND, default=False): cv.boolean,
-    }
+    },
+    extra=vol.ALLOW_EXTRA,
 )
 
 
