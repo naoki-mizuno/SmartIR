@@ -69,7 +69,10 @@ async def async_setup_platform(
         _LOGGER.error("SmartIR climate device data init failed!")
         return
 
-    async_add_entities([SmartIRClimate(hass, config, device_data)])
+    try:
+        async_add_entities([SmartIRClimate(hass, config, device_data)])
+    except Exception as e:
+        _LOGGER.exception("SmartIR climate device setup failed: '%s'", e)
 
 
 class SmartIRClimate(SmartIR, ClimateEntity, RestoreEntity):

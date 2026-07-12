@@ -48,7 +48,10 @@ async def async_setup_platform(
         _LOGGER.error("SmartIR media player device data init failed!")
         return
 
-    async_add_entities([SmartIRMediaPlayer(hass, config, device_data)])
+    try:
+        async_add_entities([SmartIRMediaPlayer(hass, config, device_data)])
+    except Exception as e:
+        _LOGGER.exception("SmartIR media player device setup failed: '%s'", e)
 
 
 class SmartIRMediaPlayer(SmartIR, MediaPlayerEntity, RestoreEntity):

@@ -49,7 +49,10 @@ async def async_setup_platform(
         _LOGGER.error("SmartIR fan device data init failed!")
         return
 
-    async_add_entities([SmartIRFan(hass, config, device_data)])
+    try:
+        async_add_entities([SmartIRFan(hass, config, device_data)])
+    except Exception as e:
+        _LOGGER.exception("SmartIR fan device setup failed: '%s'", e)
 
 
 class SmartIRFan(SmartIR, FanEntity, RestoreEntity):

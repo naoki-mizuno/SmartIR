@@ -52,7 +52,10 @@ async def async_setup_platform(
         _LOGGER.error("SmartIR light device data init failed!")
         return
 
-    async_add_entities([SmartIRLight(hass, config, device_data)])
+    try:
+        async_add_entities([SmartIRLight(hass, config, device_data)])
+    except Exception as e:
+        _LOGGER.exception("SmartIR light device setup failed: '%s'", e)
 
 
 class SmartIRLight(SmartIR, LightEntity, RestoreEntity):
