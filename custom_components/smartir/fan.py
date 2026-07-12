@@ -65,9 +65,7 @@ class SmartIRFan(SmartIR, FanEntity, RestoreEntity):
         self._speed = None
         self._oscillating = None
         self._on_by_remote = False
-        self._support_flags = (
-            FanEntityFeature.TURN_ON | FanEntityFeature.TURN_OFF
-        )
+        self._support_flags = FanEntityFeature.TURN_ON | FanEntityFeature.TURN_OFF
 
         # fan speeds (optional - device may only support on/off)
         self._speed_list = device_data.get("speed", [])

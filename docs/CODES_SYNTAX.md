@@ -304,8 +304,8 @@ Alternatively, commands can be defined for each supported color temperature valu
     ],
 ```
 
-| json attribute | mandatory |        type        | description                                                                                                                                                                                            |
-| -------------- | :-------: | :-----------------: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| json attribute | mandatory |        type        | description                                                                                                                                                                                                                                                        |
+| -------------- | :-------: | :----------------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `speed`        |   `no`    | `array of strings` | List of the fan speed steps your device can operate in. If your fan doesn't support (or you don't want to expose) speed control, omit this attribute entirely - the fan is then controlled by the `on`/`off` (and optionally `oscillate`/direction) commands only. |
 
 ### Fan commands
