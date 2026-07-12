@@ -190,12 +190,10 @@ class SmartIR:
         if new_state.state == STATE_ON and self._state != STATE_ON:
             self._state = STATE_ON
             self._on_by_remote = True
-            await self._async_update_hvac_action()
         elif new_state.state == STATE_OFF:
             self._on_by_remote = False
             if self._state != STATE_OFF:
                 self._state = STATE_OFF
-                await self._async_update_hvac_action()
         self.async_write_ha_state()
 
     @callback

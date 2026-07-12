@@ -712,6 +712,14 @@ class SmartIRClimate(SmartIR, ClimateEntity, RestoreEntity):
                     "Exception raised in the in the _send_command '%s'", e
                 )
 
+    async def _async_power_sensor_changed(
+        self, event: Event[EventStateChangedData]
+    ) -> None:
+        """Handle power sensor changes, refreshing hvac_action after."""
+        await super()._async_power_sensor_changed(event)
+        await self._async_update_hvac_action()
+        self.async_write_ha_state()
+
     async def _async_temp_sensor_changed(
         self, event: Event[EventStateChangedData]
     ) -> None:
