@@ -1,8 +1,8 @@
 # ⏻ Smart IR
 
 [![HACS Badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration)
-[![License](https://img.shields.io/github/license/litinoveweedle/smartir?style=for-the-badge)](https://github.com/litinoveweedle/smartir/blob/main/LICENSE)
-[![Latest Release](https://img.shields.io/github/v/release/litinoveweedle/smartir?style=for-the-badge)](https://github.com/litinoveweedle/smartir/releases)
+[![License](https://img.shields.io/github/license/naoki-mizuno/smartir?style=for-the-badge)](https://github.com/naoki-mizuno/smartir/blob/main/LICENSE)
+[![Latest Release](https://img.shields.io/github/v/release/naoki-mizuno/smartir?style=for-the-badge)](https://github.com/naoki-mizuno/smartir/releases)
 [![Code style](https://img.shields.io/badge/code%20style-black-000000.svg?style=for-the-badge)](https://github.com/psf/black)
 
 ## Overview
@@ -27,13 +27,13 @@ Don't forget to **star** the repository if you had fun!
 
 This is a fork of the original repository smartHomeHub/SmartIR which seems to be unmaintained at the time with many pull requests pending. As some of those were useful to my usage I decided to fork and merge the work of the corresponding authors to allow for simple usage of the integration through HACS. Therefore all the corresponding rights belong to the original authors. I also lately started to fix some additional users issues, implementing HomeAssistant future compatibility changes and adding some functionality, trying to keep compatibility but please note, that there may be some **breaking changes** from the original version.
 
-### MIGRATION from original SmartIR ###
+### MIGRATION from original SmartIR
 
 If you want to migrate from the original SmartIR project, please note following:
 
-1. Configuration *is* different! Do not use original configuration, refer to documentation for the proper syntax! Especially remove the `smartir:` section. I highly suggest to remove original SmartIR cnfiguration and create it from scratch based on configuration examples n the docs.
-2. Codes *are* different! Please use codes maintained within this project. If you have custom codes, those will likely need some rework - check documentation for proper code files syntax. If your code file is not working enable debug logging and see the logs.
-3. Code files placement *is* different! Please see following section before having nasty surprise! 
+1. Configuration _is_ different! Do not use original configuration, refer to documentation for the proper syntax! Especially remove the `smartir:` section. I highly suggest to remove original SmartIR cnfiguration and create it from scratch based on configuration examples n the docs.
+2. Codes _are_ different! Please use codes maintained within this project. If you have custom codes, those will likely need some rework - check documentation for proper code files syntax. If your code file is not working enable debug logging and see the logs.
+3. Code files placement _is_ different! Please see following section before having nasty surprise!
 
 ### WARNING - custom codes!
 
@@ -43,9 +43,9 @@ If you use any own/custom codes json files please backup such json files before 
 
 ### _HACS_
 
-If you want HACS to handle installation and updates, add SmartIR url `https://github.com/litinoveweedle/SmartIR` as a [custom repository](https://hacs.xyz/docs/faq/custom_repositories/) in the HACS. This is preffered instalation method as it would allow for automatic updates.
+If you want HACS to handle installation and updates, add SmartIR url `https://github.com/naoki-mizuno/SmartIR` as a [custom repository](https://hacs.xyz/docs/faq/custom_repositories/) in the HACS. This is preffered instalation method as it would allow for automatic updates.
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=litinoveweedle&repository=SmartIR&category=Integration)
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=naoki-mizuno&repository=SmartIR&category=Integration)
 
 ### _Manual_
 
@@ -92,7 +92,7 @@ The resulting directory structure should look similar to this:
 
 ## Device Data - IR Codes
 
-To properly function, specification of your controlled device data including IR codes shall exists either in `codes` or in `custom_codes` directory as a .JSON file. When installed both using HACS or manual method, `codes` directory is populated by device data files maintained by this project. If you would like to create your own device data file, place it in the `custom_codes` class `climate|fan|media_player|light` subdirectory, this directory is persistent and will be manitained accross HACS updates. **Please don't forget to create [PR](https://github.com/litinoveweedle/SmartIR/pulls) for this new device data file and I will try to include it in a new releases.**
+To properly function, specification of your controlled device data including IR codes shall exists either in `codes` or in `custom_codes` directory as a .JSON file. When installed both using HACS or manual method, `codes` directory is populated by device data files maintained by this project. If you would like to create your own device data file, place it in the `custom_codes` class `climate|fan|media_player|light` subdirectory, this directory is persistent and will be manitained accross HACS updates. **Please don't forget to create [PR](https://github.com/naoki-mizuno/SmartIR/pulls) for this new device data file and I will try to include it in a new releases.**
 
 ### Convert IR Codes from Broadlink to Z06/UFO-R11
 
@@ -109,8 +109,10 @@ Click on the links below for instructions on how to configure each platform.
 - [Fan platform](/docs/FAN.md)
 - [Light platform](/docs/LIGHT.md)
 
-## Debug logging ##
+## Debug logging
+
 In case of any issues, especially if you are going to open the issue, enable debug logging first and reproduce your isse.
+
 ```
     custom_components.smartir.climate: debug
     custom_components.smartir.fan: debug
