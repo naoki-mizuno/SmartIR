@@ -55,7 +55,7 @@ async def async_setup_platform(
     async_add_entities([SmartIRLight(hass, config, device_data)])
 
 
-class SmartIRLight(LightEntity, RestoreEntity):
+class SmartIRLight(SmartIR, LightEntity, RestoreEntity):
 
     def __init__(self, hass: HomeAssistant, config: ConfigType, device_data):
         # Initialize SmartIR device
