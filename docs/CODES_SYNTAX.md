@@ -294,7 +294,78 @@ Alternatively, commands can be defined for each supported color temperature valu
 
 ## Fan Speficic
 
-TBD
+### Fan declaration part
+
+```yaml:
+    "speed": [
+        "low",
+        "mid",
+        "high"
+    ],
+```
+
+| json attribute | mandatory |        type        | description                                                                                                                                                                                            |
+| -------------- | :-------: | :-----------------: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `speed`        |   `no`    | `array of strings` | List of the fan speed steps your device can operate in. If your fan doesn't support (or you don't want to expose) speed control, omit this attribute entirely - the fan is then controlled by the `on`/`off` (and optionally `oscillate`/direction) commands only. |
+
+### Fan commands
+
+#### Fan `off` command
+
+The `off` command is mandatory and is used to switch the device off.
+
+```yaml:
+    "commands": {
+        "off": "JgCSAAABKHQKDGgHtSq.............",
+```
+
+#### Fan `on` command
+
+The `on` command is optional. If your device doesn't have a dedicated `on` command, the device is switched on implicitly by whatever operate command is sent below. As without a power sensor the state is only assumed, it is highly suggested to use the power sensor feature in this case.
+
+```yaml:
+    "commands": {
+        "on": "JgCSAAABKHQKDGgHtSq.............",
+```
+
+#### Fan direction commands
+
+If your fan can blow in two directions, declare both `forward` and `reverse` top-level commands (or nested structures, see below) to enable direction support in HA. If only one (or neither) is declared, direction control is not exposed and a single internal `default` key is used instead wherever `forward`/`reverse` would otherwise be looked up.
+
+#### Fan oscillate command
+
+If declared, the `oscillate` command is a single command used whenever oscillation is turned on. It is sent in place of (not in addition to) the direction/speed command below.
+
+```yaml:
+    "commands": {
+        "oscillate": "JgCSAAABKZIXEBcRFz.............",
+```
+
+#### Fan operate (direction/speed) commands
+
+This is the command sent to put the fan in a given direction/speed. It is fully optional - if you skip it entirely (no `default`/`forward`/`reverse` key present in `commands`), the fan is controlled purely by the `on`/`off` (and `oscillate`) commands above.
+
+If you do declare it, the structure depends on whether `speed` is declared:
+
+- With `speed` declared, nest the command under `direction` -> `speed`:
+
+  ```yaml:
+  "commands": {
+      "default": {
+          "low": "JgCSAAABKZIXEBcRFz.............",
+          "mid": "JgCSAAABKHQKDGgDHz.............",
+          "high": "JgCSAAABKHQKDGgDFth............."
+      },
+  ```
+
+  (replace `default` with `forward`/`reverse` if direction is supported)
+
+- Without `speed` declared, the command is a plain string directly under `direction`:
+
+  ```yaml:
+  "commands": {
+      "default": "JgCSAAABKZIXEBcRFz.............",
+  ```
 
 ## Media Player specific
 
