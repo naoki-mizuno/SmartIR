@@ -66,17 +66,14 @@ class SmartIRFan(SmartIR, FanEntity, RestoreEntity):
         self._oscillating = None
         self._on_by_remote = False
         self._support_flags = (
-            FanEntityFeature.SET_SPEED
-            | FanEntityFeature.TURN_ON
-            | FanEntityFeature.TURN_OFF
+            FanEntityFeature.TURN_ON | FanEntityFeature.TURN_OFF
         )
 
-        # fan speeds
-        self._speed_list = device_data["speed"]
-        if not self._speed_list:
-            _LOGGER.error("Speed shall have at least one valid speed defined!")
-            return
-        self._speed = self._speed_list[0]
+        # fan speeds (optional - device may only support on/off)
+        self._speed_list = device_data.get("speed", [])
+        if self._speed_list:
+            self._speed = self._speed_list[0]
+            self._support_flags = self._support_flags | FanEntityFeature.SET_SPEED
 
         # fan direction
         if DIRECTION_REVERSE in self._commands and DIRECTION_FORWARD in self._commands:
@@ -114,7 +111,9 @@ class SmartIRFan(SmartIR, FanEntity, RestoreEntity):
     @property
     def percentage(self):
         """Return speed percentage of the fan."""
-        if self._on_by_remote and not self._power_sensor_restore_state:
+        if not self._speed_list:
+            return None
+        elif self._on_by_remote and not self._power_sensor_restore_state:
             return None
         elif self._state == STATE_OFF:
             return 0
@@ -162,7 +161,11 @@ class SmartIRFan(SmartIR, FanEntity, RestoreEntity):
             speed = self._speed
         else:
             state = STATE_ON
-            speed = percentage_to_ordered_list_item(self._speed_list, percentage)
+            speed = (
+                percentage_to_ordered_list_item(self._speed_list, percentage)
+                if self._speed_list
+                else None
+            )
 
         await self._send_command(
             state, speed, self._current_direction, self._oscillating
@@ -189,7 +192,11 @@ class SmartIRFan(SmartIR, FanEntity, RestoreEntity):
     ):
         """Turn on the fan."""
         if percentage is None:
-            percentage = ordered_list_item_to_percentage(self._speed_list, self._speed)
+            percentage = (
+                ordered_list_item_to_percentage(self._speed_list, self._speed)
+                if self._speed_list
+                else 100
+            )
 
         await self.async_set_percentage(percentage)
 
@@ -260,15 +267,12 @@ class SmartIRFan(SmartIR, FanEntity, RestoreEntity):
                                 "Missing device IR code for 'oscillate' mode."
                             )
                             return
-                    else:
-                        if (
-                            direction in self._commands
-                            and isinstance(self._commands[direction], dict)
-                            and speed in self._commands[direction]
-                        ):
-                            await self._controller.send(
-                                self._commands[direction][speed]
-                            )
+                    elif direction in self._commands:
+                        command = self._commands[direction]
+                        if isinstance(command, dict):
+                            command = command.get(speed)
+                        if isinstance(command, str):
+                            await self._controller.send(command)
                             await asyncio.sleep(self._delay)
                         else:
                             _LOGGER.error(
@@ -277,6 +281,13 @@ class SmartIRFan(SmartIR, FanEntity, RestoreEntity):
                                 speed,
                             )
                             return
+                    else:
+                        # No per-direction/speed command declared - device is
+                        # fully controlled by the 'on'/'off' commands alone.
+                        _LOGGER.debug(
+                            "No device IR code defined for direction '%s', relying on 'on'/'off' commands only.",
+                            direction,
+                        )
 
                 self._state = state
                 self._speed = speed

@@ -443,13 +443,11 @@ class DeviceData:
 
     @staticmethod
     def check_file_fan(file_name, device_data, device_class, check_data):
-        if not (
-            "speed" in device_data
-            and isinstance(device_data["speed"], list)
-            and len(device_data["speed"])
+        if "speed" in device_data and not (
+            isinstance(device_data["speed"], list) and len(device_data["speed"])
         ):
             _LOGGER.error(
-                "Invalid %s device JSON file '%s': missing or invalid attribute 'speed'.",
+                "Invalid %s device JSON file '%s': attribute 'speed', if present, must be a list with at least one item.",
                 device_class,
                 file_name,
             )
