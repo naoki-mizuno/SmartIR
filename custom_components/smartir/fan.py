@@ -206,7 +206,8 @@ class SmartIRFan(FanEntity, RestoreEntity):
                         self._commands["off"], str
                     ):
                         if (
-                            "on" in self._commands.keys()
+                            not self._always_send_command
+                            and "on" in self._commands.keys()
                             and isinstance(self._commands["on"], str)
                             and self._commands["on"] == self._commands["off"]
                             and self._state == STATE_OFF
@@ -229,7 +230,8 @@ class SmartIRFan(FanEntity, RestoreEntity):
                         self._commands["on"], str
                     ):
                         if (
-                            "off" in self._commands.keys()
+                            not self._always_send_command
+                            and "off" in self._commands.keys()
                             and isinstance(self._commands["off"], str)
                             and self._commands["off"] == self._commands["on"]
                             and self._state == STATE_ON

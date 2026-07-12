@@ -153,7 +153,9 @@ class SmartIRLight(LightEntity, RestoreEntity):
     async def async_turn_on(self, **params):
         did_something = False
         # Turn the light on if off
-        if self._state != STATE_ON and not self._on_by_remote:
+        if self._always_send_command or (
+            self._state != STATE_ON and not self._on_by_remote
+        ):
             self._state = STATE_ON
             if CMD_POWER_ON in self._commands:
                 did_something = True
@@ -277,7 +279,7 @@ class SmartIRLight(LightEntity, RestoreEntity):
         self.async_write_ha_state()
 
     async def async_turn_off(self):
-        if self._state != STATE_OFF:
+        if self._always_send_command or self._state != STATE_OFF:
             self._state = STATE_OFF
             await self.send_command(CMD_POWER_OFF)
             self.async_write_ha_state()

@@ -25,6 +25,7 @@ CONF_DELAY = "delay"
 CONF_POWER_SENSOR = "power_sensor"
 CONF_POWER_SENSOR_DELAY = "power_sensor_delay"
 CONF_POWER_SENSOR_RESTORE_STATE = "power_sensor_restore_state"
+CONF_ALWAYS_SEND_COMMAND = "always_send_command"
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
@@ -37,6 +38,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
             CONF_POWER_SENSOR_DELAY, default=DEFAULT_POWER_SENSOR_DELAY
         ): cv.positive_int,
         vol.Optional(CONF_POWER_SENSOR_RESTORE_STATE, default=True): cv.boolean,
+        vol.Optional(CONF_ALWAYS_SEND_COMMAND, default=False): cv.boolean,
     }
 )
 
@@ -131,6 +133,7 @@ class SmartIR:
         self._power_sensor = config.get(CONF_POWER_SENSOR)
         self._power_sensor_delay = config.get(CONF_POWER_SENSOR_DELAY)
         self._power_sensor_restore_state = config.get(CONF_POWER_SENSOR_RESTORE_STATE)
+        self._always_send_command = config.get(CONF_ALWAYS_SEND_COMMAND)
 
         self._state = STATE_OFF
         self._on_by_remote = False
